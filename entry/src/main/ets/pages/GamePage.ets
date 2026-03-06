@@ -38,13 +38,18 @@ struct GamePage {
   @State winnerText: string = '';
   @State playMode: string = 'AI';
 
-  // 新增：四位数字对猜模式状态
+  // 四位数字对猜模式
   @State secretCode1: string = '';
   @State secretCode2: string = '';
   @State secretStep: number = 0;
-  // 0 玩家1设置密码
-  // 1 玩家2设置密码
-  // 2 正式猜数字
+  // 0: 玩家1设置 / 玩家设置
+  // 1: 玩家2设置
+  // 2: 正式猜数字
+
+  // AI 增强
+  @State aiCandidates: Array<string> = [];
+  @State aiGuessHistory: Array<string> = [];
+  @State aiFeedbackHistory: Array<number> = [];
 
   aboutToAppear(): void {
     let rule: RuleType = RuleType.NORMAL;
@@ -69,10 +74,6 @@ struct GamePage {
       this.playMode = 'AI';
     }
 
-    if (rule === RuleType.SECRET_CODE) {
-      this.playMode = 'PVP';
-    }
-
     this.snapshot = RuleEngine.buildGame(rule);
     this.players = this.createPlayers();
     this.currentPlayerIndex = 0;
@@ -84,8 +85,16 @@ struct GamePage {
     this.secretCode2 = '';
     this.secretStep = 0;
 
+    this.aiCandidates = [];
+    this.aiGuessHistory = [];
+    this.aiFeedbackHistory = [];
+
     if (rule === RuleType.SECRET_CODE) {
-      this.gameLog = '四位数字对猜模式开始，请玩家1先输入一个四位数字';
+      if (this.playMode === 'AI') {
+        this.gameLog = '四位数字对猜模式开始，请先输入你的四位数字';
+      } else {
+        this.gameLog = '四位数字对猜模式开始，请玩家1先输入一个四位数字';
+      }
     } else {
       this.gameLog = '已开始，规则：' + rule + '，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
     }
@@ -210,7 +219,6 @@ struct GamePage {
     this.gameLog = player.name + ' 使用扫描器：' + hint.text;
   }
 
-  // 新增：统计四位数字中位置和数字都正确的个数
   private countCorrectDigits(guess: string, target: string): number {
     let count: number = 0;
     let i: number = 0;
@@ -223,13 +231,133 @@ struct GamePage {
     return count;
   }
 
-  // 新增：处理四位数字对猜模式
+  private generateAiSecretCode(): string {
+    let value: number = Math.floor(Math.random() * 10000);
+    let code: string = value.toString();
+    while (code.length < 4) {
+      code = '0' + code;
+    }
+    return code;
+  }
+
+  private initAiCandidates(): void {
+    this.aiCandidates = [];
+    let i: number = 0;
+    while (i <= 9999) {
+      let code: string = i.toString();
+      while (code.length < 4) {
+        code = '0' + code;
+      }
+      this.aiCandidates.push(code);
+      i++;
+    }
+  }
+
+  private filterAiCandidates(lastGuess: string, feedback: number): void {
+    let newCandidates: Array<string> = [];
+    let i: number = 0;
+
+    while (i < this.aiCandidates.length) {
+      let candidate: string = this.aiCandidates[i];
+      let score: number = this.countCorrectDigits(lastGuess, candidate);
+      if (score === feedback) {
+        newCandidates.push(candidate);
+      }
+      i++;
+    }
+
+    this.aiCandidates = newCandidates;
+  }
+
+  private getNextAiSecretGuess(): string {
+    if (this.aiCandidates.length === 0) {
+      return '0000';
+    }
+
+    let i: number = 0;
+    while (i < this.aiCandidates.length) {
+      let candidate: string = this.aiCandidates[i];
+      if (this.aiGuessHistory.indexOf(candidate) === -1) {
+        return candidate;
+      }
+      i++;
+    }
+
+    return this.aiCandidates[0];
+  }
+
+  private doAiSecretCodeTurn(): void {
+    if (this.gameOver) {
+      return;
+    }
+
+    let aiGuess: string = this.getNextAiSecretGuess();
+    let target: string = this.secretCode1;
+    let correctCount: number = this.countCorrectDigits(aiGuess, target);
+
+    this.aiGuessHistory.push(aiGuess);
+    this.aiFeedbackHistory.push(correctCount);
+
+    this.gameLog = 'AI 猜测 ' + aiGuess + '，猜对了 ' + correctCount + ' 个数字';
+
+    if (correctCount === 4) {
+      this.gameOver = true;
+      this.winnerText = 'AI 猜中了全部数字，获胜！';
+      return;
+    }
+
+    this.filterAiCandidates(aiGuess, correctCount);
+    this.currentPlayerIndex = 0;
+    this.gameLog = this.gameLog + '。现在轮到玩家';
+  }
+
   private submitSecretCodeMode(): void {
     if (this.inputValue.length !== 4 || isNaN(Number(this.inputValue))) {
       this.gameLog = '请输入合法的四位数字';
       return;
     }
 
+    // 四位数字对猜：人机模式
+    if (this.playMode === 'AI') {
+      if (this.secretStep === 0) {
+        this.secretCode1 = this.inputValue;
+        this.inputValue = '';
+        this.secretCode2 = this.generateAiSecretCode();
+        this.secretStep = 2;
+        this.currentPlayerIndex = 0;
+        this.initAiCandidates();
+        this.aiGuessHistory = [];
+        this.aiFeedbackHistory = [];
+        this.gameLog = '你的四位数字设置完成，AI 也已完成设置。现在轮到你先猜';
+        return;
+      }
+
+      if (this.secretStep === 2) {
+        if (this.currentPlayerIndex === 0) {
+          let targetAi: string = this.secretCode2;
+          let correctCountAi: number = this.countCorrectDigits(this.inputValue, targetAi);
+
+          if (correctCountAi === 4) {
+            this.gameOver = true;
+            this.winnerText = '玩家猜中了全部数字，获胜！';
+            return;
+          }
+
+          this.gameLog = '玩家猜测 ' + this.inputValue + '，猜对了 ' + correctCountAi + ' 个数字';
+          this.inputValue = '';
+          this.currentPlayerIndex = 1;
+
+          setTimeout(() => {
+            this.doAiSecretCodeTurn();
+          }, 600);
+          return;
+        }
+      }
+
+      return;
+    }
+
+    // 四位数字对猜：双人模式
     if (this.secretStep === 0) {
       this.secretCode1 = this.inputValue;
       this.inputValue = '';
@@ -284,14 +412,29 @@ struct GamePage {
     this.secretCode2 = '';
     this.secretStep = 0;
 
+    this.aiCandidates = [];
+    this.aiGuessHistory = [];
+    this.aiFeedbackHistory = [];
+
     if (this.snapshot.ruleType === RuleType.SECRET_CODE) {
-      this.gameLog = '重新开始，请玩家1先输入一个四位数字';
+      if (this.playMode === 'AI') {
+        this.gameLog = '重新开始，请先输入你的四位数字';
+      } else {
+        this.gameLog = '重新开始，请玩家1先输入一个四位数字';
+      }
     } else {
       this.gameLog = '重新开始，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
     }
   }
 
   private getSecretPlaceholder(): string {
+    if (this.playMode === 'AI') {
+      if (this.secretStep === 0) {
+        return '请输入你的四位数字';
+      }
+      return '请输入你猜测的四位数字';
+    }
+
     if (this.secretStep === 0) {
       return '请玩家1输入四位数字';
     }
@@ -302,6 +445,13 @@ struct GamePage {
   }
 
   private getSecretTitle(): string {
+    if (this.playMode === 'AI') {
+      if (this.secretStep === 0) {
+        return '当前阶段：设置你的密码';
+      }
+      return '当前回合：' + (this.currentPlayerIndex === 0 ? '玩家' : 'AI');
+    }
+
     if (this.secretStep === 0) {
       return '当前阶段：玩家1设置密码';
     }
@@ -352,6 +502,12 @@ struct GamePage {
             .fontSize(14)
             .fontColor('#666666')
             .width('90%')
+
+          if (this.playMode === 'AI' && this.secretStep === 2) {
+            Text('AI 候选剩余：' + this.aiCandidates.length)
+              .fontSize(14)
+              .fontColor('#888888')
+          }
         }
       } else {
         Column({ space: 8 }) {
