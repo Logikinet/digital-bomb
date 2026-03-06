@@ -8,11 +8,17 @@ struct Index {
   @State playMode: string = 'AI';
 
   private startGame(): void {
+    let realPlayMode: string = this.playMode;
+
+    if (this.selectedRule === RuleType.SECRET_CODE) {
+      realPlayMode = 'PVP';
+    }
+
     router.pushUrl({
       url: 'pages/GamePage',
       params: {
         ruleType: this.selectedRule,
-        playMode: this.playMode
+        playMode: realPlayMode
       }
     });
   }
@@ -24,9 +30,6 @@ struct Index {
         .fontWeight(FontWeight.Bold)
         .margin({ top: 30 })
 
-      Text('HarmonyOS 5.0.0（12）/ API 12')
-        .fontSize(16)
-        .fontColor('#666666')
 
       Text('选择规则')
         .fontSize(20)
@@ -54,6 +57,14 @@ struct Index {
           .onClick(() => {
             this.selectedRule = RuleType.NEAR_DANGER;
           })
+
+        Button('四位数字对猜')
+          .width('80%')
+          .backgroundColor(this.selectedRule === RuleType.SECRET_CODE ? '#007DFF' : '#DDE7F2')
+          .onClick(() => {
+            this.selectedRule = RuleType.SECRET_CODE;
+            this.playMode = 'PVP';
+          })
       }
 
       Text('选择对战模式')
@@ -65,8 +76,12 @@ struct Index {
         Button('人机对战')
           .width('80%')
           .backgroundColor(this.playMode === 'AI' ? '#22C55E' : '#DDE7F2')
+          .enabled(this.selectedRule !== RuleType.SECRET_CODE)
+          .opacity(this.selectedRule === RuleType.SECRET_CODE ? 0.5 : 1)
           .onClick(() => {
-            this.playMode = 'AI';
+            if (this.selectedRule !== RuleType.SECRET_CODE) {
+              this.playMode = 'AI';
+            }
           })
 
         Button('双人对战')
@@ -77,14 +92,17 @@ struct Index {
           })
       }
 
-      Text('当前规则：' + this.selectedRule)
-        .fontSize(18)
-        .fontColor('#333333')
-        .margin({ top: 10 })
+
 
       Text('当前模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战'))
         .fontSize(18)
         .fontColor('#333333')
+
+      if (this.selectedRule === RuleType.SECRET_CODE) {
+        Text('四位数字对猜模式仅支持双人对战')
+          .fontSize(14)
+          .fontColor('#E84026')
+      }
 
       Button('开始游戏')
         .width('80%')

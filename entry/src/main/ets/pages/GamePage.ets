@@ -38,6 +38,14 @@ struct GamePage {
   @State winnerText: string = '';
   @State playMode: string = 'AI';
 
+  // 新增：四位数字对猜模式状态
+  @State secretCode1: string = '';
+  @State secretCode2: string = '';
+  @State secretStep: number = 0;
+  // 0 玩家1设置密码
+  // 1 玩家2设置密码
+  // 2 正式猜数字
+
   aboutToAppear(): void {
     let rule: RuleType = RuleType.NORMAL;
     let params = router.getParams() as Record<string, Object>;
@@ -48,6 +56,8 @@ struct GamePage {
         rule = RuleType.DOUBLE_BOMB;
       } else if (ruleValue === 'NEAR_DANGER') {
         rule = RuleType.NEAR_DANGER;
+      } else if (ruleValue === 'SECRET_CODE') {
+        rule = RuleType.SECRET_CODE;
       } else {
         rule = RuleType.NORMAL;
       }
@@ -59,13 +69,26 @@ struct GamePage {
       this.playMode = 'AI';
     }
 
+    if (rule === RuleType.SECRET_CODE) {
+      this.playMode = 'PVP';
+    }
+
     this.snapshot = RuleEngine.buildGame(rule);
     this.players = this.createPlayers();
     this.currentPlayerIndex = 0;
     this.inputValue = '';
-    this.gameLog = '已开始，规则：' + rule + '，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
     this.gameOver = false;
     this.winnerText = '';
+
+    this.secretCode1 = '';
+    this.secretCode2 = '';
+    this.secretStep = 0;
+
+    if (rule === RuleType.SECRET_CODE) {
+      this.gameLog = '四位数字对猜模式开始，请玩家1先输入一个四位数字';
+    } else {
+      this.gameLog = '已开始，规则：' + rule + '，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
+    }
   }
 
   private createPlayers(): Array<Player> {
@@ -106,7 +129,7 @@ struct GamePage {
           this.doAiTurn();
         }, 600);
       } else {
-        if (this.playMode === 'PVP') {
+        if (this.playMode === 'PVP' && this.snapshot.ruleType !== RuleType.SECRET_CODE) {
           this.gameLog = this.gameLog + '。现在轮到' + current.name;
         }
       }
@@ -187,6 +210,68 @@ struct GamePage {
     this.gameLog = player.name + ' 使用扫描器：' + hint.text;
   }
 
+  // 新增：统计四位数字中位置和数字都正确的个数
+  private countCorrectDigits(guess: string, target: string): number {
+    let count: number = 0;
+    let i: number = 0;
+    while (i < 4) {
+      if (guess.charAt(i) === target.charAt(i)) {
+        count++;
+      }
+      i++;
+    }
+    return count;
+  }
+
+  // 新增：处理四位数字对猜模式
+  private submitSecretCodeMode(): void {
+    if (this.inputValue.length !== 4 || isNaN(Number(this.inputValue))) {
+      this.gameLog = '请输入合法的四位数字';
+      return;
+    }
+
+    if (this.secretStep === 0) {
+      this.secretCode1 = this.inputValue;
+      this.inputValue = '';
+      this.secretStep = 1;
+      this.gameLog = '玩家1设置完成，请玩家2输入一个四位数字';
+      return;
+    }
+
+    if (this.secretStep === 1) {
+      this.secretCode2 = this.inputValue;
+      this.inputValue = '';
+      this.secretStep = 2;
+      this.currentPlayerIndex = 0;
+      this.gameLog = '双方设置完成。现在轮到玩家1开始猜测';
+      return;
+    }
+
+    if (this.secretStep === 2) {
+      let currentPlayer: Player = this.players[this.currentPlayerIndex];
+      let target: string = '';
+
+      if (this.currentPlayerIndex === 0) {
+        target = this.secretCode2;
+      } else {
+        target = this.secretCode1;
+      }
+
+      let correctCount: number = this.countCorrectDigits(this.inputValue, target);
+
+      if (correctCount === 4) {
+        this.gameOver = true;
+        this.winnerText = currentPlayer.name + ' 猜中了全部数字，获胜！';
+        return;
+      }
+
+      this.gameLog = currentPlayer.name + ' 猜测 ' + this.inputValue + '，猜对了 ' + correctCount + ' 个数字';
+      this.inputValue = '';
+      this.currentPlayerIndex = (this.currentPlayerIndex + 1) % 2;
+      this.gameLog = this.gameLog + '。现在轮到' + this.players[this.currentPlayerIndex].name;
+    }
+  }
+
   private restartGame(): void {
     this.players = this.createPlayers();
     this.currentPlayerIndex = 0;
@@ -194,7 +279,36 @@ struct GamePage {
     this.winnerText = '';
     this.inputValue = '';
     this.snapshot = RuleEngine.buildGame(this.snapshot.ruleType);
-    this.gameLog = '重新开始，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
+
+    this.secretCode1 = '';
+    this.secretCode2 = '';
+    this.secretStep = 0;
+
+    if (this.snapshot.ruleType === RuleType.SECRET_CODE) {
+      this.gameLog = '重新开始，请玩家1先输入一个四位数字';
+    } else {
+      this.gameLog = '重新开始，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
+    }
+  }
+
+  private getSecretPlaceholder(): string {
+    if (this.secretStep === 0) {
+      return '请玩家1输入四位数字';
+    }
+    if (this.secretStep === 1) {
+      return '请玩家2输入四位数字';
+    }
+    return '请输入你猜测的四位数字';
+  }
+
+  private getSecretTitle(): string {
+    if (this.secretStep === 0) {
+      return '当前阶段：玩家1设置密码';
+    }
+    if (this.secretStep === 1) {
+      return '当前阶段：玩家2设置密码';
+    }
+    return '当前回合：' + (this.players.length > 0 ? this.players[this.currentPlayerIndex].name : '玩家1');
   }
 
   build() {
@@ -228,48 +342,71 @@ struct GamePage {
       .width('92%')
       .justifyContent(FlexAlign.SpaceBetween)
 
-      Column({ space: 8 }) {
-        Text('当前安全区间')
-          .fontSize(18)
-          .fontColor('#666666')
+      if (this.snapshot.ruleType === RuleType.SECRET_CODE) {
+        Column({ space: 8 }) {
+          Text(this.getSecretTitle())
+            .fontSize(20)
+            .fontWeight(FontWeight.Medium)
 
-        Text(this.snapshot.min + '  ~  ' + this.snapshot.max)
-          .fontSize(36)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#007DFF')
+          Text('玩法：双方先各自设置一个四位数字，再轮流猜对方的数字')
+            .fontSize(14)
+            .fontColor('#666666')
+            .width('90%')
+        }
+      } else {
+        Column({ space: 8 }) {
+          Text('当前安全区间')
+            .fontSize(18)
+            .fontColor('#666666')
+
+          Text(this.snapshot.min + '  ~  ' + this.snapshot.max)
+            .fontSize(36)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#007DFF')
+        }
+        .width('90%')
+        .padding(20)
+        .backgroundColor('#FFFFFF')
+        .borderRadius(16)
+
+        Text('当前回合：' + (this.players.length > 0 ? this.players[this.currentPlayerIndex].name : '玩家1'))
+          .fontSize(20)
+          .fontWeight(FontWeight.Medium)
       }
-      .width('90%')
-      .padding(20)
-      .backgroundColor('#FFFFFF')
-      .borderRadius(16)
-
-      Text('当前回合：' + (this.players.length > 0 ? this.players[this.currentPlayerIndex].name : '玩家1'))
-        .fontSize(20)
-        .fontWeight(FontWeight.Medium)
 
       if (!this.gameOver) {
         Column({ space: 12 }) {
-          TextInput({ text: this.inputValue, placeholder: '请输入一个数字' })
+          TextInput({
+            text: this.inputValue,
+            placeholder: this.snapshot.ruleType === RuleType.SECRET_CODE ? this.getSecretPlaceholder() : '请输入一个数字'
+          })
             .type(InputType.Number)
             .width('80%')
             .onChange((value: string) => {
               this.inputValue = value;
             })
 
-          Row({ space: 12 }) {
-            Button('确认猜测')
+          if (this.snapshot.ruleType === RuleType.SECRET_CODE) {
+            Button('确认')
               .onClick(() => {
-                if (this.players.length > 0 && this.getCurrentPlayer().type === PlayerType.HUMAN) {
-                  this.submitGuess();
-                }
+                this.submitSecretCodeMode();
               })
+          } else {
+            Row({ space: 12 }) {
+              Button('确认猜测')
+                .onClick(() => {
+                  if (this.players.length > 0 && this.getCurrentPlayer().type === PlayerType.HUMAN) {
+                    this.submitGuess();
+                  }
+                })
 
-            Button('扫描器(' + (this.players.length > 0 ? this.getCurrentPlayer().scannerCount : 0) + ')')
-              .onClick(() => {
-                if (this.players.length > 0 && this.getCurrentPlayer().type === PlayerType.HUMAN) {
-                  this.useScanner();
-                }
-              })
+              Button('扫描器(' + (this.players.length > 0 ? this.getCurrentPlayer().scannerCount : 0) + ')')
+                .onClick(() => {
+                  if (this.players.length > 0 && this.getCurrentPlayer().type === PlayerType.HUMAN) {
+                    this.useScanner();
+                  }
+                })
+            }
           }
         }
       }

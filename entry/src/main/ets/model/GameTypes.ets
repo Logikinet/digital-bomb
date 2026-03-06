@@ -1,7 +1,8 @@
 export enum RuleType {
   NORMAL = 'NORMAL',
   DOUBLE_BOMB = 'DOUBLE_BOMB',
-  NEAR_DANGER = 'NEAR_DANGER'
+  NEAR_DANGER = 'NEAR_DANGER',
+  SECRET_CODE = 'SECRET_CODE'
 }
 
 export enum PlayerType {
