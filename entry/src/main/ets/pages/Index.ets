@@ -1,99 +1,39 @@
 import router from '@ohos.router';
-import { RuleType } from '../model/GameTypes';
 
 @Entry
 @Component
 struct Index {
-  @State selectedRule: RuleType = RuleType.NORMAL;
-  @State playMode: string = 'AI';
-
-  private startGame(): void {
-    router.pushUrl({
-      url: 'pages/GamePage',
-      params: {
-        ruleType: this.selectedRule,
-        playMode: this.playMode
-      }
-    });
-  }
-
   build() {
-    Column({ space: 20 }) {
-      Text('炸弹边界 MVP')
-        .fontSize(30)
+    Column({ space: 24 }) {
+      Text('小游戏大厅')
+        .fontSize(32)
         .fontWeight(FontWeight.Bold)
-        .margin({ top: 30 })
+        .margin({ top: 40 })
 
+      Text('后续你新增的所有游戏，都从这里进入')
+        .fontSize(16)
+        .fontColor('#666666')
 
-      Text('选择规则')
-        .fontSize(20)
-        .fontWeight(FontWeight.Medium)
-        .margin({ top: 10 })
-
-      Column({ space: 12 }) {
-        Button('经典模式')
-          .width('80%')
-          .backgroundColor(this.selectedRule === RuleType.NORMAL ? '#007DFF' : '#DDE7F2')
+      Column({ space: 16 }) {
+        Button('炸弹边界 MVP')
+          .width('85%')
+          .height(56)
+          .fontSize(22)
+          .backgroundColor('#007DFF')
           .onClick(() => {
-            this.selectedRule = RuleType.NORMAL;
+            router.pushUrl({
+              url: 'pages/BombBoundaryPage'
+            });
           })
 
-        Button('双炸弹模式')
-          .width('80%')
-          .backgroundColor(this.selectedRule === RuleType.DOUBLE_BOMB ? '#007DFF' : '#DDE7F2')
-          .onClick(() => {
-            this.selectedRule = RuleType.DOUBLE_BOMB;
-          })
-
-        Button('连号危险模式')
-          .width('80%')
-          .backgroundColor(this.selectedRule === RuleType.NEAR_DANGER ? '#007DFF' : '#DDE7F2')
-          .onClick(() => {
-            this.selectedRule = RuleType.NEAR_DANGER;
-          })
-
-        Button('四位数字对猜')
-          .width('80%')
-          .backgroundColor(this.selectedRule === RuleType.SECRET_CODE ? '#007DFF' : '#DDE7F2')
-          .onClick(() => {
-            this.selectedRule = RuleType.SECRET_CODE;
-          })
+        Button('敬请期待：下一个游戏')
+          .width('85%')
+          .height(56)
+          .fontSize(20)
+          .backgroundColor('#DDE7F2')
+          .fontColor('#666666')
       }
-
-      Text('选择对战模式')
-        .fontSize(20)
-        .fontWeight(FontWeight.Medium)
-        .margin({ top: 10 })
-
-      Column({ space: 12 }) {
-        Button('人机对战')
-          .width('80%')
-          .backgroundColor(this.playMode === 'AI' ? '#22C55E' : '#DDE7F2')
-          .onClick(() => {
-            this.playMode = 'AI';
-          })
-
-        Button('双人对战')
-          .width('80%')
-          .backgroundColor(this.playMode === 'PVP' ? '#22C55E' : '#DDE7F2')
-          .onClick(() => {
-            this.playMode = 'PVP';
-          })
-      }
-
-
-      Text('当前模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战'))
-        .fontSize(18)
-        .fontColor('#333333')
-
-      Button('开始游戏')
-        .width('80%')
-        .height(50)
-        .fontSize(20)
-        .margin({ top: 20 })
-        .onClick(() => {
-          this.startGame();
-        })
+      .margin({ top: 30 })
     }
     .width('100%')
     .height('100%')
