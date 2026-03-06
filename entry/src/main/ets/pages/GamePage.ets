@@ -36,6 +36,7 @@ struct GamePage {
   @State gameLog: string = '游戏开始';
   @State gameOver: boolean = false;
   @State winnerText: string = '';
+  @State playMode: string = 'AI';
 
   aboutToAppear(): void {
     let rule: RuleType = RuleType.NORMAL;
@@ -52,11 +53,17 @@ struct GamePage {
       }
     }
 
+    if (params && params['playMode'] !== undefined) {
+      this.playMode = params['playMode'] as string;
+    } else {
+      this.playMode = 'AI';
+    }
+
     this.snapshot = RuleEngine.buildGame(rule);
     this.players = this.createPlayers();
     this.currentPlayerIndex = 0;
     this.inputValue = '';
-    this.gameLog = '已开始，规则：' + rule;
+    this.gameLog = '已开始，规则：' + rule + '，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
     this.gameOver = false;
     this.winnerText = '';
   }
@@ -64,22 +71,22 @@ struct GamePage {
   private createPlayers(): Array<Player> {
     let list: Array<Player> = [];
 
-    let human: Player = new Player();
-    human.id = 1;
-    human.name = '玩家';
-    human.hp = 3;
-    human.type = PlayerType.HUMAN;
-    human.scannerCount = 1;
+    let first: Player = new Player();
+    first.id = 1;
+    first.name = this.playMode === 'AI' ? '玩家' : '玩家1';
+    first.hp = 3;
+    first.type = PlayerType.HUMAN;
+    first.scannerCount = 1;
 
-    let ai: Player = new Player();
-    ai.id = 2;
-    ai.name = 'AI';
-    ai.hp = 3;
-    ai.type = PlayerType.AI;
-    ai.scannerCount = 1;
+    let second: Player = new Player();
+    second.id = 2;
+    second.name = this.playMode === 'AI' ? 'AI' : '玩家2';
+    second.hp = 3;
+    second.type = this.playMode === 'AI' ? PlayerType.AI : PlayerType.HUMAN;
+    second.scannerCount = 1;
 
-    list.push(human);
-    list.push(ai);
+    list.push(first);
+    list.push(second);
 
     return list;
   }
@@ -90,6 +97,7 @@ struct GamePage {
 
   private switchTurn(): void {
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    this.inputValue = '';
 
     if (!this.gameOver) {
       let current: Player = this.getCurrentPlayer();
@@ -97,6 +105,10 @@ struct GamePage {
         setTimeout(() => {
           this.doAiTurn();
         }, 600);
+      } else {
+        if (this.playMode === 'PVP') {
+          this.gameLog = this.gameLog + '。现在轮到' + current.name;
+        }
       }
     }
   }
@@ -182,7 +194,7 @@ struct GamePage {
     this.winnerText = '';
     this.inputValue = '';
     this.snapshot = RuleEngine.buildGame(this.snapshot.ruleType);
-    this.gameLog = '重新开始';
+    this.gameLog = '重新开始，模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战');
   }
 
   build() {
@@ -196,15 +208,19 @@ struct GamePage {
         .fontSize(18)
         .fontColor('#666666')
 
+      Text('模式：' + (this.playMode === 'AI' ? '人机对战' : '双人对战'))
+        .fontSize(18)
+        .fontColor('#666666')
+
       Row({ space: 10 }) {
         HpCard({
-          name: this.players.length > 0 ? this.players[0].name : '玩家',
+          name: this.players.length > 0 ? this.players[0].name : '玩家1',
           hp: this.players.length > 0 ? this.players[0].hp : 3,
           isCurrent: this.currentPlayerIndex === 0
         })
 
         HpCard({
-          name: this.players.length > 1 ? this.players[1].name : 'AI',
+          name: this.players.length > 1 ? this.players[1].name : '玩家2',
           hp: this.players.length > 1 ? this.players[1].hp : 3,
           isCurrent: this.currentPlayerIndex === 1
         })
@@ -227,7 +243,7 @@ struct GamePage {
       .backgroundColor('#FFFFFF')
       .borderRadius(16)
 
-      Text('当前回合：' + (this.players.length > 0 ? this.players[this.currentPlayerIndex].name : '玩家'))
+      Text('当前回合：' + (this.players.length > 0 ? this.players[this.currentPlayerIndex].name : '玩家1'))
         .fontSize(20)
         .fontWeight(FontWeight.Medium)
 

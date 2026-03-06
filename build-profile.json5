@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\stu1\\.ohos\\config\\default_MyApplication2_4DWRLbcF6wfNInih3FjajrHVKkzp3WrQCDRf7dj_2ws=.cer",
+          "certpath": "C:\\Users\\stu1\\.ohos\\config\\default_digital-bomb_ocywulPpEicSKKbrVJWaXJbWwfJgpEcDWP4M7UQWHbY=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A4D1C30948908B05BE8A1FF7694804C592B8D2422079CC3FBD533132F2720A2D8378C3EB8E2F1",
-          "profile": "C:\\Users\\stu1\\.ohos\\config\\default_MyApplication2_4DWRLbcF6wfNInih3FjajrHVKkzp3WrQCDRf7dj_2ws=.p7b",
+          "keyPassword": "0000001B4821784083AB3531B7F1F5484A005A04B24E48F335143650731DCD45619F0EE986F4784D6D3284",
+          "profile": "C:\\Users\\stu1\\.ohos\\config\\default_digital-bomb_ocywulPpEicSKKbrVJWaXJbWwfJgpEcDWP4M7UQWHbY=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\stu1\\.ohos\\config\\default_MyApplication2_4DWRLbcF6wfNInih3FjajrHVKkzp3WrQCDRf7dj_2ws=.p12",
-          "storePassword": "0000001A7A6B14D1F4C5AA9C3147A857031114F2BBE1038A5530A8DEC8AA0DE1C2A4F3273452D21F27F7"
+          "storeFile": "C:\\Users\\stu1\\.ohos\\config\\default_digital-bomb_ocywulPpEicSKKbrVJWaXJbWwfJgpEcDWP4M7UQWHbY=.p12",
+          "storePassword": "0000001B7576BC89FE78B7D8DCBEF3BF58918D342B9A27F9CC5D9184A89A1782A77208A3E8E9D86ED03AB8"
         }
       }
     ],
