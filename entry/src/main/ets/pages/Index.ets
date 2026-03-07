@@ -38,6 +38,17 @@ struct Index {
             });
           })
 
+        Button('恐龙跳跃')
+          .width('85%')
+          .height(56)
+          .fontSize(22)
+          .backgroundColor('#F59E0B')
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/DinoRunHomePage'
+            });
+          })
+
         Button('敬请期待：下一个游戏')
           .width('85%')
           .height(56)
