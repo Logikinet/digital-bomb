@@ -5,8 +5,6 @@ export class DinoRunHelper {
   static readonly ROLE_X: number = 80;
   static readonly ROLE_WIDTH: number = 90;
   static readonly ROLE_HEIGHT: number = 96;
-  static readonly OBSTACLE_WIDTH: number = 50;
-  static readonly OBSTACLE_HEIGHT: number = 100;
 
   static resetRole(): DinoRole {
     let role: DinoRole = new DinoRole();
@@ -20,36 +18,85 @@ export class DinoRunHelper {
     return role;
   }
 
-  static createObstacle(x: number): DinoObstacle {
+  static createRandomObstacle(x: number, score: number = 0): DinoObstacle {
     let obstacle: DinoObstacle = new DinoObstacle();
     obstacle.x = x;
-    obstacle.y = DinoRunHelper.GROUND_Y;
-    obstacle.width = DinoRunHelper.OBSTACLE_WIDTH;
-    obstacle.height = DinoRunHelper.OBSTACLE_HEIGHT;
     obstacle.passed = false;
+
+    let birdChance: number = 35;
+    if (score >= 10) {
+      birdChance = 40;
+    }
+    if (score >= 25) {
+      birdChance = 45;
+    }
+
+    let randomValue: number = Math.floor(Math.random() * 100);
+    if (randomValue < birdChance) {
+      obstacle.type = 'bird';
+      obstacle.width = 72;
+      obstacle.height = 52;
+
+      let birdHeightMode: number = Math.floor(Math.random() * 3);
+      if (birdHeightMode === 0) {
+        obstacle.y = 318;
+      } else if (birdHeightMode === 1) {
+        obstacle.y = 270;
+      } else {
+        obstacle.y = 235;
+      }
+    } else {
+      obstacle.type = 'cactus';
+      let cactusMode: number = Math.floor(Math.random() * 3);
+      if (cactusMode === 0) {
+        obstacle.width = 46;
+        obstacle.height = 92;
+      } else if (cactusMode === 1) {
+        obstacle.width = 58;
+        obstacle.height = 108;
+      } else {
+        obstacle.width = 72;
+        obstacle.height = 92;
+      }
+      obstacle.y = DinoRunHelper.GROUND_Y + (100 - obstacle.height);
+    }
+
     return obstacle;
   }
 
-  static getRandomGap(): number {
-    return 260 + Math.floor(Math.random() * 180);
+  static getRandomGap(score: number = 0): number {
+    let baseGap: number = 220;
+
+    if (score >= 10) {
+      baseGap = 205;
+    }
+    if (score >= 22) {
+      baseGap = 190;
+    }
+    if (score >= 38) {
+      baseGap = 175;
+    }
+    if (score >= 60) {
+      baseGap = 165;
+    }
+
+    return baseGap + Math.floor(Math.random() * 60);
   }
 
-  // 第一次点击：起跳
   static jump(role: DinoRole): DinoRole {
     let next: DinoRole = DinoRunHelper.copyRole(role);
     if (!next.isJumping && next.y >= DinoRunHelper.GROUND_Y) {
       next.isJumping = true;
-      next.velocityY = -16;
+      next.velocityY = -15.5;
     }
     return next;
   }
 
-  // 第二次点击：下坠
   static fastDrop(role: DinoRole): DinoRole {
     let next: DinoRole = DinoRunHelper.copyRole(role);
     if (next.isJumping && next.y < DinoRunHelper.GROUND_Y) {
-      if (next.velocityY < 10) {
-        next.velocityY = 10;
+      if (next.velocityY < 12) {
+        next.velocityY = 12;
       }
     }
     return next;
@@ -60,7 +107,7 @@ export class DinoRunHelper {
 
     if (next.isJumping || next.y < DinoRunHelper.GROUND_Y) {
       next.y = next.y + next.velocityY;
-      next.velocityY = next.velocityY + 1.0;
+      next.velocityY = next.velocityY + 0.92;
 
       if (next.y >= DinoRunHelper.GROUND_Y) {
         next.y = DinoRunHelper.GROUND_Y;
@@ -88,11 +135,10 @@ export class DinoRunHelper {
     return next;
   }
 
-  static recycleObstacleIfNeeded(obstacle: DinoObstacle, sceneWidth: number): DinoObstacle {
+  static recycleObstacleIfNeeded(obstacle: DinoObstacle, sceneWidth: number, score: number): DinoObstacle {
     let next: DinoObstacle = DinoRunHelper.copyObstacle(obstacle);
     if (next.x + next.width < 0) {
-      next.x = sceneWidth + DinoRunHelper.getRandomGap();
-      next.passed = false;
+      next = DinoRunHelper.createRandomObstacle(sceneWidth + DinoRunHelper.getRandomGap(score), score);
     }
     return next;
   }
@@ -108,15 +154,22 @@ export class DinoRunHelper {
   }
 
   static isCollision(role: DinoRole, obstacle: DinoObstacle): boolean {
-    let roleLeft: number = role.x + 12;
-    let roleRight: number = role.x + role.width - 12;
-    let roleTop: number = role.y + 12;
+    let roleLeft: number = role.x + 16;
+    let roleRight: number = role.x + role.width - 16;
+    let roleTop: number = role.y + 14;
     let roleBottom: number = role.y + role.height - 8;
 
     let obsLeft: number = obstacle.x + 8;
     let obsRight: number = obstacle.x + obstacle.width - 8;
-    let obsTop: number = obstacle.y + 10;
-    let obsBottom: number = obstacle.y + obstacle.height;
+    let obsTop: number = obstacle.y + 6;
+    let obsBottom: number = obstacle.y + obstacle.height - 2;
+
+    if (obstacle.type === 'bird') {
+      obsLeft = obstacle.x + 10;
+      obsRight = obstacle.x + obstacle.width - 10;
+      obsTop = obstacle.y + 10;
+      obsBottom = obstacle.y + obstacle.height - 8;
+    }
 
     let horizontalHit: boolean = roleRight > obsLeft && roleLeft < obsRight;
     let verticalHit: boolean = roleBottom > obsTop && roleTop < obsBottom;
@@ -125,10 +178,39 @@ export class DinoRunHelper {
   }
 
   static nextSpeed(score: number): number {
-    let speed: number = 7 + Math.floor(score / 12);
-    if (speed > 15) {
+    let speed: number = 8;
+
+    if (score >= 4) {
+      speed = 9;
+    }
+    if (score >= 8) {
+      speed = 10;
+    }
+    if (score >= 12) {
+      speed = 10.5;
+    }
+    if (score >= 16) {
+      speed = 11;
+    }
+    if (score >= 22) {
+      speed = 11.5;
+    }
+    if (score >= 28) {
+      speed = 12;
+    }
+    if (score >= 36) {
+      speed = 12.5;
+    }
+    if (score >= 48) {
+      speed = 13;
+    }
+    if (score >= 64) {
+      speed = 14;
+    }
+    if (score >= 84) {
       speed = 15;
     }
+
     return speed;
   }
 
@@ -151,6 +233,7 @@ export class DinoRunHelper {
     next.width = obstacle.width;
     next.height = obstacle.height;
     next.passed = obstacle.passed;
+    next.type = obstacle.type;
     return next;
   }
 }

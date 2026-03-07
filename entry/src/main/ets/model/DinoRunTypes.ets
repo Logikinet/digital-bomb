@@ -14,6 +14,7 @@ export class DinoObstacle {
   width: number = 50;
   height: number = 100;
   passed: boolean = false;
+  type: string = 'cactus';
 }
 
 export enum DinoGameStatus {
