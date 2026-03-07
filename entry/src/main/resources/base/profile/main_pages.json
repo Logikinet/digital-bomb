@@ -2,6 +2,8 @@
   "src": [
     "pages/Index",
     "pages/BombBoundaryPage",
-    "pages/GamePage"
+    "pages/GamePage",
+    "pages/Game2048HomePage",
+    "pages/Game2048Page"
   ]
 }

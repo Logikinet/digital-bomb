@@ -1,4 +1,5 @@
 import router from '@ohos.router';
+import prompt from '@system.prompt';
 
 @Entry
 @Component
@@ -10,7 +11,7 @@ struct Index {
         .fontWeight(FontWeight.Bold)
         .margin({ top: 40 })
 
-      Text('后续你新增的所有游戏，都从这里进入')
+      Text('当前已集成的游戏入口')
         .fontSize(16)
         .fontColor('#666666')
 
@@ -26,12 +27,28 @@ struct Index {
             });
           })
 
+        Button('2048')
+          .width('85%')
+          .height(56)
+          .fontSize(22)
+          .backgroundColor('#22C55E')
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/Game2048HomePage'
+            });
+          })
+
         Button('敬请期待：下一个游戏')
           .width('85%')
           .height(56)
           .fontSize(20)
           .backgroundColor('#DDE7F2')
           .fontColor('#666666')
+          .onClick(() => {
+            prompt.showToast({
+              message: '功能开发中，敬请期待'
+            });
+          })
       }
       .margin({ top: 30 })
     }

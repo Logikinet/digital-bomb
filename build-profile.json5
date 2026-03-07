@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\stu1\\.ohos\\config\\default_digital-bomb_ocywulPpEicSKKbrVJWaXJbWwfJgpEcDWP4M7UQWHbY=.cer",
+          "certpath": "C:/Users/Administrator/.ohos/config/default_digital-bomb_Qh07rTwJ24cfdYRb7V8YApHfGfJ7ODuLIGfn9DjRlDg=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B4821784083AB3531B7F1F5484A005A04B24E48F335143650731DCD45619F0EE986F4784D6D3284",
-          "profile": "C:\\Users\\stu1\\.ohos\\config\\default_digital-bomb_ocywulPpEicSKKbrVJWaXJbWwfJgpEcDWP4M7UQWHbY=.p7b",
+          "keyPassword": "0000001BBFF4BBC8C1126106D65E5C0246B87FBD32EC641EB3412384E0364F6DC972129D481BB3F25B6D3C",
+          "profile": "C:/Users/Administrator/.ohos/config/default_digital-bomb_Qh07rTwJ24cfdYRb7V8YApHfGfJ7ODuLIGfn9DjRlDg=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\stu1\\.ohos\\config\\default_digital-bomb_ocywulPpEicSKKbrVJWaXJbWwfJgpEcDWP4M7UQWHbY=.p12",
-          "storePassword": "0000001B7576BC89FE78B7D8DCBEF3BF58918D342B9A27F9CC5D9184A89A1782A77208A3E8E9D86ED03AB8"
+          "storeFile": "C:/Users/Administrator/.ohos/config/default_digital-bomb_Qh07rTwJ24cfdYRb7V8YApHfGfJ7ODuLIGfn9DjRlDg=.p12",
+          "storePassword": "0000001B367910CDB02C59B8C01FE689C5589D56C53D38DDC7C20CF6C5B740CA719F84B135847D68A84092"
         }
       }
     ],
@@ -26,7 +26,8 @@
             "caseSensitiveCheck": true,
             "useNormalizedOHMUrl": true
           }
-        }
+        },
+        "targetSdkVersion": "5.0.0(12)"
       }
     ],
     "buildModeSet": [
