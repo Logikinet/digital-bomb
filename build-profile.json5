@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:/Users/Administrator/.ohos/config/default_digital-bomb_Qh07rTwJ24cfdYRb7V8YApHfGfJ7ODuLIGfn9DjRlDg=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BBFF4BBC8C1126106D65E5C0246B87FBD32EC641EB3412384E0364F6DC972129D481BB3F25B6D3C",
+          "keyPassword": "0000001BE9871480AD963061C0F56302E1CBE64D36EAA046E1A2CC60D21D46C97CC41C8765BF69360CCE1C",
           "profile": "C:/Users/Administrator/.ohos/config/default_digital-bomb_Qh07rTwJ24cfdYRb7V8YApHfGfJ7ODuLIGfn9DjRlDg=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:/Users/Administrator/.ohos/config/default_digital-bomb_Qh07rTwJ24cfdYRb7V8YApHfGfJ7ODuLIGfn9DjRlDg=.p12",
-          "storePassword": "0000001B367910CDB02C59B8C01FE689C5589D56C53D38DDC7C20CF6C5B740CA719F84B135847D68A84092"
+          "storePassword": "0000001BF3BDB26934123A9DE940F5BCBC7592B09CB7302F62AC29202FAA380917A2AE2FF852BD99BA1F36"
         }
       }
     ],

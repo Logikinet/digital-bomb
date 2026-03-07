@@ -2,15 +2,11 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
-    },
-    {
-      "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "小游戏大厅"
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "游戏乐园"
     }
   ]
 }
